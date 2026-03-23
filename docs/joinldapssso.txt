@@ -1,0 +1,16 @@
+Collegarsi SSH vCenter
+
+openssl s_client -showcerts -connect RMSAL-AOAOPGC1.aop.enav.it:636 > dc1.txt
+openssl s_client -showcerts -connect RMSAL-AOAOPGC2.aop.enav.it:636 > dc2.txt
+cat dc1.txt > dc1.crt
+cat dc2.txt > dc2.crt
+vim dc1.crt (Prendi solo la Chain)
+vim dc2.crt (Prendi solo la Chain)
+
+sso-config.sh -add_identity_source -type adldap -baseUserDN "OU=ORG,OU=IM,DC=aop,DC=enav,DC=it" -baseGroupDN "OU=ORG,OU=IM,DC=aop,DC=enav,DC=it" -domain "aop.enav.it" -alias "AOP" -username "CN=Zincone Stefano,OU=ORG,OU=IM,DC=aop,DC=enav,DC=it" -password 'pippo' -primaryURL "ldaps://RMSAL-AOAOPGC1.aop.enav.it:636" -secondaryURL "ldaps://RMSAL-AOAOPGC2.aop.enav.it:636" -useSSL true -sslCert dc1.crt,dc2.crt
+
+
+Serve utente con permessi di bind LDAP
+La password va messa in chiaro nel comando, quindi se usato account personale, poi va cambiata
+Per generarsi i DN, da macchina joinata a dominio, loggati con utente con permessi, su powershell, lanciare gpresult /R
+

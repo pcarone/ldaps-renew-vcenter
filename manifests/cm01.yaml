@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ldaps-sync-config
+  namespace: ldaps-sync
+  labels:
+    app.kubernetes.io/name: ldaps-vcenter-sync
+    app.kubernetes.io/component: config
+# Sostituisci tutti i placeholder con i valori reali del tuo ambiente.
+data:
+  # vCenter
+  VCENTER_URL: "https://vcenter.example.local"
+  VCENTER_PROVIDER_NAME: "__FILL_ME__"
+  VCENTER_SSO_DOMAIN: "vsphere.local"
+
+  # AD / LDAPS
+  DOMAIN_NAME: "example.local"
+  DOMAIN_ALIAS: "EXAMPLE"
+  USERS_BASE_DN: "DC=example,DC=local"
+  GROUPS_BASE_DN: "DC=example,DC=local"
+  PRIMARY_LDAPS_URL: "ldaps://dc1.example.local:636"
+  SECONDARY_LDAPS_URL: "ldaps://dc2.example.local:636"
+
+  # Secret naming
+  CURRENT_CERT_SECRET_NAME: "ldaps-current"
+  HISTORY_CERT_SECRET_PREFIX: "ldaps-history"
+
+  # Checker behavior
+  CHECK_MODE: "leaf-or-chain" # opzionale: leaf-or-chain | leaf-only | chain-only
+  OPENSSL_TIMEOUT_SECONDS: "15"

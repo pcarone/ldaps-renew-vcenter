@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ldaps-checker
+  namespace: ldaps-sync
+  labels:
+    app.kubernetes.io/name: ldaps-vcenter-sync
+    app.kubernetes.io/component: checker
+spec:
+  # Esempio: ogni 6 ore
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: ldaps-vcenter-sync
+            app.kubernetes.io/component: checker
+        spec:
+          serviceAccountName: ldaps-checker
+          restartPolicy: Never
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: checker
+              # Sostituisci con la tua immagine reale.
+              image: ghcr.io/example/ldaps-checker:latest
+              imagePullPolicy: IfNotPresent
+              envFrom:
+                - configMapRef:
+                    name: ldaps-sync-config
+              env:
+                - name: POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+              # Logica attesa:
+              # 1) legge CURRENT_CERT_SECRET_NAME
+              # 2) interroga PRIMARY_LDAPS_URL e SECONDARY_LDAPS_URL via openssl s_client
+              # 3) confronta il certificato/chain attuale con la Secret corrente
+              # 4) se diverso, crea una Secret storica con prefisso HISTORY_CERT_SECRET_PREFIX
+              # 5) aggiorna la Secret CURRENT_CERT_SECRET_NAME
+              args:
+                - check-and-update-secret
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 250m
+                  memory: 256Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 10001
+                capabilities:
+                  drop: ["ALL"]

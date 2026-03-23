@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ldaps-checker
+  namespace: ldaps-sync
+  labels:
+    app.kubernetes.io/name: ldaps-vcenter-sync
+    app.kubernetes.io/component: checker
